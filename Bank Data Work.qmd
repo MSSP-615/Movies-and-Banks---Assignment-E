@@ -1,0 +1,91 @@
+---
+title: "Assignment E: Tidying and Transforming Data in R"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Assignment E: Tidying and Transforming Data in R
+
+```{r}
+#| label: packages
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(magrittr)
+
+```
+
+## Part 1: World Development Bank Data Dataset (WDBD.csv)
+
+```{r}
+#| label: read bank data
+#| warning: false
+#| message: false
+
+bank_data_raw <- read.csv("WDBD.csv")
+bank_data <- bank_data_raw
+
+```
+
+```{r}
+#| label: tidying bank data
+
+bank_data_info <- bank_data %>% 
+  
+
+```
+
+## Part 2: Movies Data Dataset (movies.csv)
+
+```{r}
+#| label: read movies data
+#| warning: false
+#| message: false
+
+movie_data_raw <- read.csv("movies.csv")
+movie_data <- movie_data_raw
+
+```
+
+Now, lets tidy the movies data.
+
+```{r}
+#| label: movie data tidying
+
+#Separate the year from the movie title and clean up
+#Used AI to help 
+movie_data <- movie_data %>%
+  mutate(
+    year = str_extract(title, "\\((\\d{4})\\)"),
+    year = str_remove_all(year, "[()]"),
+    title = str_remove_all(title, "\\s\\(\\d{4}\\)")
+  ) %>% 
+  relocate(year, .after = movieId)
+
+#Separate the genres out from being together
+movie_data <- movie_data %>%
+  separate_longer_delim(genres, delim = "|") %>%
+  mutate(genres = na_if(genres, "(no genres listed)"))
+
+#Rename columns
+movie_data <-  movie_data %>% 
+  rename(`Movie Id` = movieId, Year = year, Title = title, Genre = genres)
+
+```
+
+```{r}
+#| label: other movie data
+
+#Read in other movie data
+links_raw <- read.csv("links.csv")
+ratings_raw <- read.csv("ratings.csv")
+tags_raw <- read.csv("tags.csv")
+
+links <- links_raw
+ratings <- ratings_raw
+tags <- tags_raw
+
+```
