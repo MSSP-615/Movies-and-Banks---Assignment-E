@@ -8,7 +8,7 @@ editor: visual
 
 ## Assignment E: Tidying and Transforming Data in R
 
-```{r}
+```{r, echo=FALSE}
 #| label: packages
 #| warning: false
 #| message: false
@@ -20,6 +20,7 @@ library(magrittr)
 
 ## Part 1: World Development Bank Data Dataset (WDBD.csv)
 
+First, let's read in the data and separate the bottom information part from the data itself.
 ```{r}
 #| label: read bank data
 #| warning: false
@@ -28,64 +29,72 @@ library(magrittr)
 bank_data_raw <- read.csv("WDBD.csv")
 bank_data <- bank_data_raw
 
+bank_data_info <- bank_data_raw %>% 
+  slice(2982:3079)
+
 ```
+
+
+Let's tidy the information data frame. 
+
+```{r}
+
+headers1 <- as.character(bank_data_info[1, ])
+headers2 <- as.character(bank_data_info[2,1:7])
+new_headers <- c(headers1, headers2, c("n1", "n2", "n3", "n4"))
+
+bank_data_info <- bank_data_info[-(1:2), ]
+
+empty_matrix <- matrix(vector(), nrow = 48, ncol = 22)
+bank_info_clean <- data.frame(empty_matrix)
+colnames(bank_info_clean) <- new_headers
+
+j <- 1
+
+for (i in seq(1, 95, by = 2)) {
+  part1 <- as.character(bank_data_info[i, ])
+  part2 <- as.character(bank_data_info[i+1, ])
+  comb_rows <- c(part1, part2)
+  
+  bank_info_clean[j, ] <- comb_rows
+  j <- j+1
+}
+
+```
+
+Still tidying the information data frame. 
+
+```{r}
+bank_info_clean <- bank_info_clean %>% 
+  select(-n2, -n3, -n4) %>% 
+  mutate(across(everything(), ~na_if(., ""))) %>% 
+  mutate(`License URL` = coalesce(`License URL`, n1)) %>% 
+  select(-n1)
+```
+
+
+
+Now let's tidy the actal data. 
 
 ```{r}
 #| label: tidying bank data
+# AI helped with some of this code 
 
-bank_data_info <- bank_data %>% 
-  
-
-```
-
-## Part 2: Movies Data Dataset (movies.csv)
-
-```{r}
-#| label: read movies data
-#| warning: false
-#| message: false
-
-movie_data_raw <- read.csv("movies.csv")
-movie_data <- movie_data_raw
-
-```
-
-Now, lets tidy the movies data.
-
-```{r}
-#| label: movie data tidying
-
-#Separate the year from the movie title and clean up
-#Used AI to help 
-movie_data <- movie_data %>%
-  mutate(
-    year = str_extract(title, "\\((\\d{4})\\)"),
-    year = str_remove_all(year, "[()]"),
-    title = str_remove_all(title, "\\s\\(\\d{4}\\)")
+bank_data <- bank_data %>% 
+  slice(-(2977:3079)) %>%
+  rename_with(
+    ~str_extract(.x, "\\d{4}"),
+    .cols = starts_with("X")
   ) %>% 
-  relocate(year, .after = movieId)
-
-#Separate the genres out from being together
-movie_data <- movie_data %>%
-  separate_longer_delim(genres, delim = "|") %>%
-  mutate(genres = na_if(genres, "(no genres listed)"))
-
-#Rename columns
-movie_data <-  movie_data %>% 
-  rename(`Movie Id` = movieId, Year = year, Title = title, Genre = genres)
-
-```
-
-```{r}
-#| label: other movie data
-
-#Read in other movie data
-links_raw <- read.csv("links.csv")
-ratings_raw <- read.csv("ratings.csv")
-tags_raw <- read.csv("tags.csv")
-
-links <- links_raw
-ratings <- ratings_raw
-tags <- tags_raw
+  rename_with(
+    ~gsub("\\.", " ", .x), # The replacement pattern
+    .cols = 1:4           # The columns to apply the change to
+  ) %>% 
+  mutate(across(everything(), ~na_if(., ".."))) %>% 
+  pivot_longer(
+    cols = c(`2018`:`2024`), 
+    names_to = "Year", 
+    values_to = "Value" 
+  )
 
 ```
