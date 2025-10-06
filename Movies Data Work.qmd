@@ -25,18 +25,21 @@ library(magrittr)
 #| warning: false
 #| message: false
 
+#read in the data set
 movie_data_raw <- read.csv("movies.csv")
 movie_data <- movie_data_raw
 
 ```
 
-Now, lets tidy the movies data.
+
+Now, lets tidy the movies data. When I look at the raw data, I see that the tear the movie was made is attached in the same column as the movie title. That will need to be separated. All of the genres the movie falls into are listed in a single cell. These need to be separated into one line each. 
+
 
 ```{r}
 #| label: movie data tidying
 
 #Separate the year from the movie title and clean up
-#Used AI to help 
+#Used AI to help fix my code to work
 movie_data <- movie_data %>%
   mutate(
     year = str_extract(title, "\\((\\d{4})\\)"),
@@ -45,27 +48,74 @@ movie_data <- movie_data %>%
   ) %>% 
   relocate(year, .after = movieId)
 
+#Clean up movie titles so they're all the same format
+#Used AI to help fix my code to work
+movie_data <- movie_data |>
+  mutate(
+    # First, fix commas inside parentheses
+    title = sub(
+      pattern = "(\\(([^,]+), ([^,)]+)\\))",
+      replacement = "(\\3 \\2)",
+      x = title
+    ),
+    # Second, fix the general comma-and-word-at-end pattern
+    title = sub(
+      pattern = "^(.*), ([^,)]+)(?:\\s*)((?:\\(.*\\))?)$",
+      replacement = "\\2 \\1 \\3",
+      x = title
+    ),
+    # Third, clean up any extra whitespace
+    title = str_squish(title)
+  )
+
 #Separate the genres out from being together
+#Replaces no genre with NA
 movie_data <- movie_data %>%
   separate_longer_delim(genres, delim = "|") %>%
   mutate(genres = na_if(genres, "(no genres listed)"))
+
 
 #Rename columns
 movie_data <-  movie_data %>% 
   rename(`Movie Id` = movieId, Year = year, Title = title, Genre = genres)
 
+head(movie_data)
 ```
+
+Extension: 
+Read in other sources of movie data. 
 
 ```{r}
 #| label: other movie data
 
 #Read in other movie data
 links_raw <- read.csv("links.csv")
-ratings_raw <- read.csv("ratings.csv")
-tags_raw <- read.csv("tags.csv")
-
 links <- links_raw
+
+ratings_raw <- read.csv("ratings.csv")
 ratings <- ratings_raw
+
+tags_raw <- read.csv("tags.csv")
 tags <- tags_raw
+
+```
+
+
+```{r}
+#rename the columns in the new data sets so they match with the movie data
+links <-  links %>% 
+  rename(`Movie Id` = movieId, `IMDB Id` = imdbId, `TMDB Id` = tmdbId)
+ratings <-  ratings %>% 
+  rename(`Movie Id` = movieId, `User Id` = userId, `Rating` = rating)
+tags <-  tags %>% 
+  rename(`Movie Id` = movieId, `User Id` = userId, `Tag` = tag)
+
+#combine the movie and links 
+movies_links <- left_join(movie_data, links, by = "Movie Id")
+
+movies_links <- movies_links %>% 
+  relocate(`IMDB Id`, .after =  `Movie Id`) %>% 
+  relocate(`TMDB Id`, .after =  `IMDB Id`)
+
 
 ```
