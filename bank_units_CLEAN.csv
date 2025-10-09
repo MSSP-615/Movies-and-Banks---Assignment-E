@@ -1,0 +1,49 @@
+Series Code,Series Name,Units
+EG.CFT.ACCS.RU.ZS,"Access to clean fuels and technologies for cooking, rural",% of rural population
+EG.CFT.ACCS.ZS,Access to clean fuels and technologies for cooking,% of population
+EG.CFT.ACCS.UR.ZS,"Access to clean fuels and technologies for cooking, urban",% of urban population
+EG.ELC.ACCS.ZS,Access to electricity,% of population
+EG.ELC.ACCS.RU.ZS,"Access to electricity, rural",% of rural population
+EG.ELC.ACCS.UR.ZS,"Access to electricity, urban",% of urban population
+FX.OWN.TOTL.ZS,Account ownership at a financial institution or with a mobile-money-service provider,% of population ages 15+
+FX.OWN.TOTL.FE.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, female",% of population ages 15+
+FX.OWN.TOTL.MA.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, male",% of population ages 15+
+FX.OWN.TOTL.OL.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, older adults",% of population ages 25+
+FX.OWN.TOTL.40.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, poorest 40%",% of population ages 15+
+FX.OWN.TOTL.PL.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, primary education or less",% of population ages 15+
+FX.OWN.TOTL.60.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, richest 60%",% of population ages 15+
+FX.OWN.TOTL.SO.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, secondary education or more",% of population ages 15+
+FX.OWN.TOTL.YG.ZS,"Account ownership at a financial institution or with a mobile-money-service provider, young adults",% of population ages 15-24
+per_si_allsi.adq_pop_tot,Adequacy of social insurance programs,% of total welfare of beneficiary households
+per_allsp.adq_pop_tot,Adequacy of social protection and labor programs,% of total welfare of beneficiary households
+per_sa_allsa.adq_pop_tot,Adequacy of social safety net programs,% of total welfare of beneficiary households
+per_lm_alllm.adq_pop_tot,Adequacy of unemployment benefits and ALMP,% of total welfare of beneficiary households
+SE.PRM.TENR,"Adjusted net enrollment rate, primary",% of primary school age children
+SE.PRM.TENR.FE,"Adjusted net enrollment rate, primary, female",% of primary school age children
+SE.PRM.TENR.MA,"Adjusted net enrollment rate, primary, male",% of primary school age children
+NY.ADJ.NNTY.KD.ZG,Adjusted net national income,annual % growth
+NY.ADJ.SVNG.CD,"Adjusted net savings, including particulate emission damage",current US$
+NY.ADJ.AEDU.CD,Adjusted savings: education expenditure,current US$
+SM.POP.ASYS.EO,Asylum-seekers by country or territory of origin,Number
+SM.POP.ASYS.EA,Asylum-seekers by country or territory of asylum,Number
+SP.POP.DPND,Age dependency ratio,% of working-age population
+SH.HIV.INCD,Adults (ages 15-49) newly infected with HIV,Number
+SH.HIV.INCD.TL,Adults (ages 15+) and children (ages 0-14) newly infected with HIV,Number
+SP.POP.DPND.OL,"Age dependency ratio, old",% of working-age population
+SP.POP.DPND.YG,"Age dependency ratio, young",% of working-age population
+AG.LND.AGRI.ZS,Agricultural land,% of land area
+AG.LND.AGRI.K2,Agricultural land,sq. km
+AG.LND.IRIG.AG.ZS,Agricultural irrigated land,% of total agricultural land
+SL.TLF.0714.WK.FE.TM,"Average working hours of children, working only, female, ages 7-14",hours per week
+SL.TLF.0714.WK.MA.TM,"Average working hours of children, working only, male, ages 7-14",hours per week
+SL.TLF.0714.WK.TM,"Average working hours of children, working only, ages 7-14",hours per week
+SL.TLF.0714.SW.MA.TM,"Average working hours of children, study and work, male, ages 7-14",hours per week
+SL.TLF.0714.SW.FE.TM,"Average working hours of children, study and work, female, ages 7-14",hours per week
+SL.TLF.0714.SW.TM,"Average working hours of children, study and work, ages 7-14",hours per week
+SP.REG.BRTH.ZS,Completeness of birth registration,%
+NY.GDP.COAL.RT.ZS,Coal rents,% of GDP
+SP.DYN.CDRT.IN,"Death rate, crude","per 1,000 people"
+EN.CLC.DRSK.XQ,Disaster risk reduction progress score,1-5 scale; 5=best
+SL.EMP.MPYR.MA.ZS,"Employers, male",% of male employment (modeled ILO estimate)
+SL.EMP.MPYR.FE.ZS,"Employers, female",% of female employment (modeled ILO estimate)
+SL.EMP.MPYR.ZS,"Employers, total",% of total employment (modeled ILO estimate)

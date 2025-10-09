@@ -7,8 +7,6 @@ format:
 editor: visual
 ---
 
-## Assignment E: Tidying and Transforming Data in R
-
 ```{r, echo=FALSE}
 #| label: packages
 #| warning: false
@@ -16,14 +14,14 @@ editor: visual
 
 library(tidyverse)
 library(magrittr)
-
+library(rvest)
+library(labelled)
 ```
+
 
 ## Part 1: World Development Bank Data Dataset (WDBD.csv)
 
-First, we will read in the data and separate the bottom information part from the data itself. This data has a lot of character columns. To tidy the data we first need to make a year column and convert the data into a value column based on the year for each country. 
-
-
+1.  We will read in the data and separate the bottom information part from the data itself. This data has a lot of character columns. To tidy the data we first need to make a year column and convert the data into a value column based on the year for each country. 
 
 ```{r}
 #| label: read bank data
@@ -31,17 +29,20 @@ First, we will read in the data and separate the bottom information part from th
 #| message: false
 
 #Read in the bank data
-#Slice off the meta data from the bottom into it's own data frame
 bank_data_raw <- read.csv("WDBD.csv")
-bank_data <- bank_data_raw
 
+#Slice off so just have the data
+bank_data <- bank_data_raw %>%
+  slice(-(2977:3079))
+
+#Slice off the meta data from the bottom into it's own data frame
 bank_data_info <- bank_data_raw %>% 
   slice(2982:3079)
 
 ```
 
 
-Let's tidy the information data frame. 
+2. Let's tidy the metadata information data frame. First we have to get each row to be one row rather than the two rows it was read in as.
 
 ```{r}
 #put the header lines each as a vector and combine into one
@@ -68,11 +69,6 @@ for (i in seq(1, 95, by = 2)) {
   j <- j+1
 }
 
-```
-
-Still tidying the information data frame. 
-
-```{r}
 bank_info_clean <- bank_info_clean %>%
   #remove empty columns
   select(-n2, -n3, -n4) %>% 
@@ -90,15 +86,13 @@ bank_info_clean <- bank_info_clean %>%
 ```
 
 
-Now let's tidy the actual data. 
+3. Now let's tidy the actual bank data. Get all the years, which are columns, as a single column with their values as a second column. 
 
 ```{r}
 #| label: tidying bank data
 # AI helped with some of this code 
 
-bank_data <- bank_data %>% 
-  #get rid of the meta data at the bottom
-  slice(-(2977:3079)) %>%
+bank_data <- bank_data %>%
   #rename the year columns to just be the year
   rename_with(
     ~str_extract(.x, "\\d{4}"),
@@ -109,7 +103,7 @@ bank_data <- bank_data %>%
     ~gsub("\\.", " ", .x), 
     .cols = 1:4
   ) %>% 
-  #change the .. in the data to NA's 
+  #change the ..'s in the data to NA's 
   mutate(across(everything(), ~na_if(., ".."))) %>% 
   #Convert the year columns into a single year column and a value column
   pivot_longer(
@@ -118,30 +112,77 @@ bank_data <- bank_data %>%
     values_to = "Value" 
   ) %>% 
   #rearrange columns
-  relocate(`Series Code`, .after = `Country Code`) 
+  relocate(`Series Code`, .after = `Country Code`)
 
-bank_data <- bank_data %>% 
+```
+
+```{r}
+#pivot data wider so series names are the column headers (variables) and each year observation is a row of data 
+bank_data_wide <- bank_data %>%
+  pivot_wider(
+    id_cols = c("Country Name", "Country Code", "Year"),
+    names_from = "Series Name",
+    values_from = c("Value")
+  )
+
+#convert columns with numbers to numeric
+bank_data_wide <- bank_data_wide %>%
+  mutate(across(-c(`Country Code`, `Country Name`), as.numeric))
+
+# remove any columns where the entire column is NA's 
+bank_data_wide <- bank_data_wide %>%
+  #if all entries are NA, remove column
+  select(where(~ !all(is.na(.)))) %>%
+  #if less than 5% of the cells have data, remove column
+  select(where(~mean(!is.na(.)) > 0.05))
+
+
+write_csv(bank_data_wide, "bank_data_CLEAN.csv")
+
+
+```
+
+
+Now for the units! 
+
+```{r}
+# create a new data frame to get units
+bank_data_units <- bank_data %>% 
+  select(`Series Code`, `Series Name`)
+
+
+bank_data_units <- bank_data_units %>% 
   # separate the units out from the series name column
-  separate_wider_delim(
-    cols = "Series Name", 
-    delim = " (", 
-    names = c("Series Name", "Units"), 
-    too_many = "merge", 
-    too_few = "align_start") %>%
-  mutate(Units = str_remove(Units, "\\)"))
+  mutate(Units = str_extract(`Series Name`, "\\(([^)]+)\\)$|\\(([^)]+)\\) \\(([^)]+)\\)$")) %>% 
+  #eliminate duplicate rows
+  unique() %>% 
+  #remove the parentheses from the Units column
+  mutate(Units = str_replace(Units, "\\(", "")) %>%
+  mutate(Units = str_replace(Units, "\\)", "")) %>% 
+  #Clean up the original Series Name by removing the extracted unit strings
+  mutate(`Series Name` = str_replace(
+    `Series Name`, 
+    "\\s*\\([^)]*\\) *\\([^)]*\\)$|\\s*\\([^)]*\\)$", 
+    ""
+  )) 
 
-bank_data <- bank_data %>%
+
+bank_data_units <- bank_data_units %>%
   #combine metadata units column to fill NA's from series name units
   left_join(bank_info_clean %>% 
               select(`Series Code`, `Unit of measure`), 
               by = "Series Code") %>% 
-  relocate(`Unit of measure`, .after = Units) %>%
   mutate(Units = coalesce(Units, `Unit of measure`)) %>% 
-  select(-`Unit of measure`) %>% 
-  relocate(Units, .after = Value)
+  select(-`Unit of measure`) 
+
+
+write_csv(bank_data_units, "bank_units_CLEAN.csv")
 
 
 ```
+
+
+
 
 
 ## Part 2: Movies Data Dataset (movies.csv)
@@ -195,15 +236,30 @@ movie_data <- movie_data |>
   )
 
 #Separate the genres out from being together
-#Replaces no genre with NA
 movie_data <- movie_data %>%
-  separate_longer_delim(genres, delim = "|") %>%
-  mutate(genres = na_if(genres, "(no genres listed)"))
+  separate_wider_delim(genres, delim = "|", names_sep = "_", too_few = "align_start" )
+
+#Replaces no genre with NA
+movie_data <- movie_data %>%  
+  mutate(`genres_1` = na_if(`genres_1`, "(no genres listed)"))
+
+#Remove Genre columns if data is less than 5% data in the column
+movie_data <- movie_data %>%  
+  select(-genres_7, -genres_6, -genres_5, -genres_4)
 
 
 #Rename columns
 movie_data <-  movie_data %>% 
-  rename(`Movie Id` = movieId, Year = year, Title = title, Genre = genres)
+  rename(`Movie Id` = movieId, 
+          Year = year, 
+          Title = title, 
+          `Genre 1` = genres_1, 
+          `Genre 2` = genres_2,
+          `Genre 3` = genres_3
+        )
+
 
 head(movie_data)
+write_csv(movie_data, "movie_data_CLEAN.csv")
+
 ```
